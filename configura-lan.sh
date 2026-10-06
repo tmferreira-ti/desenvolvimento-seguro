@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+sudo wget https://raw.githubusercontent.com/tmferreira-ti/desenvolvimento-seguro/refs/heads/main/interfaces-kali -O /etc/network/interfaces
+
+sudo systemctl restart networking
+
 CONEXAO="LAN"
 INTERFACE="eth1"
 ENDERECO="192.168.10.10/24"
