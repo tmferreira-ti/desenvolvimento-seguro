@@ -14,7 +14,7 @@ Abra o HTML em um navegador mantendo a pasta `assets` ao lado. As referências t
 
 1. Introdução ao Cross-Site Scripting e fronteira entre dados e código.
 2. HTML, JavaScript, propriedades, eventos e atributos.
-3. XSS refletido: News, nove payloads e quebra de atributo.
+3. XSS refletido: News, nove payloads confirmados, um exemplo ilustrativo de redirecionamento e quebra de atributo.
 4. XSS armazenado: Contact, fluxo de persistência e seis exemplos.
 5. Cookies, sessões, exfiltração conceitual, HttpOnly, Secure, SameSite e CSP.
 6. Identificação de XSS e registro de evidências.
@@ -88,7 +88,7 @@ Inspeção do HTML recebido e do DOM com Chromium 148, automatizado por Selenium
 
 - HTML analisado com parser HTML5 (`html5lib`), sem erros de parsing.
 - CSS analisado com `tinycss2`, sem erros sintáticos de regras ou declarações; seletores com escopo verificado.
-- Nove seções de módulo, quinze fichas de payload, exemplos adicionais de atributos/cookies/correção e links internos válidos.
+- Nove seções de módulo, dezesseis fichas de payload, exemplos adicionais de atributos/cookies/correção e links internos válidos.
 - Ausência de elementos ativos `script`, `iframe`, `object`, `embed`, formulários, inputs, SVG ou atributos de evento no tutorial. As ocorrências de código são texto escapado em `pre/code`.
 - Exemplos obrigatórios de `new Image()`, dados fictícios, `htmlspecialchars` e HttpOnly presentes.
 - Imagens locais e referências relativas válidas; nenhuma dependência de rede para renderizar o material.
